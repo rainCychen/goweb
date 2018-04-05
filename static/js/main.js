@@ -45,13 +45,13 @@ hangUpButton.addEventListener("click",function(){
     })
     onLeave();
 })
-var wsConn  = new WebSocket('wss://czobjm.xyz:4430');
+var wsConn  = new WebSocket('wss://localhost:4430');
 wsConn.onopen = function(){
     console.log("connnected");
 }
 //通过回调函数处理所有消息
 wsConn.onmessage = function(message){
-    console.log("Got message:",message.data);
+    //console.log("Got message:",message.data);
     var data = JSON.parse(message.data);
     switch(data.type){
         case "login":
@@ -74,6 +74,7 @@ wsConn.onmessage = function(message){
     }
 }
 wsConn.onerror = function(error){
+	alert("Got error", error);
     console.log("Got error", error);
 }
 function send(message){
