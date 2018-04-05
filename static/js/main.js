@@ -45,7 +45,7 @@ hangUpButton.addEventListener("click",function(){
     })
     onLeave();
 })
-var wsConn  = new WebSocket('wss://localhost:4430');
+var wsConn  = new WebSocket('wss://czobjm.xyz:4430');
 wsConn.onopen = function(){
     console.log("connnected");
 }
