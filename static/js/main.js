@@ -167,7 +167,7 @@ function startConnection(){
     if(hasUserMedia()){
         navigator.getUserMedia({video:true,audio:false},function(mystream){
             stream = mystream;
-            yourVideo.src = window.URL.createObjectURL(stream);
+            yourVideo.srcObject = stream;
     
             if(hasRTCPeerConnection()){
                 setupPeerConnection(stream);
