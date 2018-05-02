@@ -1,45 +1,12 @@
-package controllers
+package webrtc
 
 import (
-	"net/http"
+	"encoding/json"
 	"time"
 
-	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 	"github.com/gorilla/websocket"
 )
-
-type ChartController struct {
-	beego.Controller
-}
-
-func (c *ChartController) Get() {
-	c.TplName = "chart.html"
-}
-
-type event struct {
-	Name string
-	Msg  string
-}
-
-func (c *ChartController) Join() {
-	if c.Ctx.Request.Method != "GET" {
-		http.Error(c.Ctx.ResponseWriter, "Method not allowed", 405)
-		return
-	}
-	ws, err := websocket.Upgrade(c.Ctx.ResponseWriter, c.Ctx.Request, nil, 1024, 1024)
-	if _, ok := err.(websocket.HandshakeError); ok {
-		http.Error(c.Ctx.ResponseWriter, "Not a websocket handshake", 400)
-		return
-	} else if err != nil {
-		beego.Error("Cannot setup WebSocket connection:", err)
-		return
-	}
-	go h.run()
-	con := &connection{send: make(chan []byte, 256), ws: ws}
-	h.register <- con
-	go con.writePump()
-	con.readPump()
-}
 
 const (
 	// Time allowed to write a message to the peer.
@@ -82,10 +49,37 @@ func (c *connection) readPump() {
 	}
 }
 
+type Msg struct {
+	Type string      `json:"type"`
+	Data interface{} `json:"data"`
+	Name string      `json:"name"`
+}
+
+var nameMap = make(map[string]time.Time)
+
 // write writes a message with the given message type and payload.
 func (c *connection) write(mt int, payload []byte) error {
 	c.ws.SetWriteDeadline(time.Now().Add(writeWait))
-	return c.ws.WriteMessage(mt, payload)
+	msg := Msg{}
+	err := json.Unmarshal(payload, &msg)
+	if err != nil {
+		logs.Warning("json decode failed %v", err.Error())
+		logs.Debug(string(payload))
+	}
+	if msg.Type == "login" {
+		if _, ok := nameMap[msg.Name]; ok {
+			msg.Data = false
+		} else {
+			nameMap[msg.Name] = time.Now()
+			msg.Data = true
+		}
+	}
+	var Byte []byte
+	if Byte, err = json.Marshal(msg); err != nil {
+		logs.Warning("json encode failed %v", err.Error())
+	}
+	logs.Debug(msg)
+	return c.ws.WriteMessage(mt, Byte)
 }
 
 // writePump pumps messages from the hub to the websocket connection.
@@ -108,50 +102,6 @@ func (c *connection) writePump() {
 		case <-ticker.C:
 			if err := c.write(websocket.PingMessage, []byte{}); err != nil {
 				return
-			}
-		}
-	}
-}
-
-type hub struct {
-	// Registered connections.
-	connections map[*connection]bool
-
-	// Inbound messages from the connections.
-	broadcast chan []byte
-
-	// Register requests from the connections.
-	register chan *connection
-
-	// Unregister requests from connections.
-	unregister chan *connection
-}
-
-var h = hub{
-	broadcast:   make(chan []byte),
-	register:    make(chan *connection),
-	unregister:  make(chan *connection),
-	connections: make(map[*connection]bool),
-}
-
-func (h *hub) run() {
-	for {
-		select {
-		case c := <-h.register:
-			h.connections[c] = true
-		case c := <-h.unregister:
-			if _, ok := h.connections[c]; ok {
-				delete(h.connections, c)
-				close(c.send)
-			}
-		case m := <-h.broadcast:
-			for c := range h.connections {
-				select {
-				case c.send <- m:
-				default:
-					close(c.send)
-					delete(h.connections, c)
-				}
 			}
 		}
 	}

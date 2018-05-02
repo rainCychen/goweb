@@ -1,92 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>Chat Example</title>
-<script src="/static/js/jquery-1.10.1.min.js"></script>
-<script type="text/javascript">
-    $(function() {
-
-    var conn;
-    var msg = $("#msg");
-    var log = $("#log");
-
-    function appendLog(msg) {
-        var d = log[0]
-        var doScroll = d.scrollTop == d.scrollHeight - d.clientHeight;
-        msg.appendTo(log)
-        if (doScroll) {
-            d.scrollTop = d.scrollHeight - d.clientHeight;
-        }
-    }
-
-    $("#form").submit(function() {
-        if (!conn) {
-            return false;
-        }
-        if (!msg.val()) {
-            return false;
-        }
-        conn.send(msg.val());
-        msg.val("");
-        return false
-    });
-
-    if (window["WebSocket"]) {
-        conn = new WebSocket('ws://' + window.location.host + '/ws/join');
-        conn.onclose = function(evt) {
-            appendLog($("<div><b>Connection closed.</b></div>"))
-        }
-        conn.onmessage = function(evt) {
-            appendLog($("<div/>").text(evt.data))
-        }
-    } else {
-        appendLog($("<div><b>Your browser does not support WebSockets.</b></div>"))
-    }
-    });
-</script>
-<style type="text/css">
-html {
-    overflow: hidden;
-}
-
-body {
-    overflow: hidden;
-    padding: 0;
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    background: gray;
-}
-
-#log {
-    background: white;
-    margin: 0;
-    padding: 0.5em 0.5em 0.5em 0.5em;
-    position: absolute;
-    top: 0.5em;
-    left: 0.5em;
-    right: 0.5em;
-    bottom: 3em;
-    overflow: auto;
-}
-
-#form {
-    padding: 0 0.5em 0 0.5em;
-    margin: 0;
-    position: absolute;
-    bottom: 1em;
-    left: 0px;
-    width: 100%;
-    overflow: hidden;
-}
-
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
 </head>
 <body>
-<div id="log"></div>
-<form id="form">
-    <input type="submit" value="Send" />
-    <input type="text" id="msg" size="64"/>
-</form>
+    <div id="login_page">
+        <h2>Login As</h2>
+        <input type="text" id="username">
+        <button id="login">Login</button>
+    </div>
+    <div id="call_page">
+	<h1>本地视屏流</h1>
+        <video id="you" controls autoplay ></video>
+    <h2>远程视屏流</h2>
+        <video id="other" controls autoplay></video>
+    <div>
+        <input type="text" id="other_username"><br>
+        <button id="call">Call</button><br>
+        <button id="hang_up">Hang up</button><br>
+    </div>
+
+    </div>
+
 </body>
+<script src="/static/js/jquery-1.10.1.min.js"></script>
+<script src="/static/js/BandwidthHandler.js"></script>
+<script src="/static/js/main.js"></script>
 </html>
