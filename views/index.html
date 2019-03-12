@@ -77,12 +77,13 @@
   <header>
     <h1 class="logo">{{.hello}}</h1>
     <div class="description">
-      Welcome To My Website!
+      Welcome {{.User}} To My Website!
     </div>
   </header>
   <footer>
     <div class="author">
       Official website:
+
       <a href="http://{{.Website}}">{{.Website}}</a> /
       Contact me:
       <a class="email" href="mailto:{{.Email}}">{{.Email}}</a>

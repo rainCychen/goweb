@@ -1,5 +1,7 @@
 *.exe
 *.exe~
+goweb
 /conf/
-
+/vendor/*
+!/vendor/vendor.json
 conf/app.conf

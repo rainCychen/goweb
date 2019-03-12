@@ -1,13 +1,15 @@
 package main
 
 import (
-	"goweb/controllers/webrtc"
+	// "goweb/controllers/webrtc"
 	_ "goweb/routers"
-
+	
 	"github.com/astaxie/beego"
 )
 
 func main() {
-	webrtc.New()
+	// webrtc.New()
+	
 	beego.Run()
+	
 }
